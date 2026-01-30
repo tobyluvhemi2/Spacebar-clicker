@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Bar Clicker (Upgraded & Debugged)</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #282c34;
+            color: white;
+            font-family: cursive;
+            user-select: none;
+        }
+
+        #counter-display {
+            font-size: 8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .stats-container {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: #61dafb;
+        }
+        
+        #cpc-display, #cps-display {
+            font-weight: bold;
+        }
+
+        #keyboard-container {
+            width: 325px;
+            height: 50px;
+            background-color: #555;
+            border: 2px solid #888;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px #444;
+            transition: all 0.1s ease;
+            margin-bottom: 20px;
+        }
+        
+        #keyboard-container.pressed {
+            background-color: #61dafb;
+            box-shadow: 0 1px #444;
+            transform: translateY(3px);
+        }
+
+        #reset-button, #achievements-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        #achievements-button {
+            background-color: #4a4a8f;
+            margin-right: 10px;
+        }
+
+        /* Shop Styles */
+        .shop-container {
+            background-color: #3a3f4a;
+            padding: 15px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            border: 1px solid #555;
+        }
+
+        .shop-item {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 10px;
+        }
+
+        .shop-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .shop-item button {
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .shop-item button:disabled {
+            background-color: #777;
+            cursor: not-allowed;
+        }
+
+        /* Achievements Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #3a3f4a;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .achievement-list li {
+            padding: 10px;
+            border-bottom: 1px solid #555;
+            list-style-type: none;
+        }
+
+        .achievement-list li.unlocked {
+            color: #4CAF50; /* Green for unlocked */
+        }
+
+        .achievement-list li.locked {
+            color: #777; /* Gray for locked */
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="counter-display">0</div>    
+
+    <div class="stats-container">
+        <p>CPC: <span id="cpc-display">1</span> | CPS: <span id="cps-display">0</span></p>
+    </div>
+    
+    <div id="keyboard-container">
+        SPACE BAR
+    </div>
+
+    <div class="shop-container">
+        <h5>if you can not see your click count use the keyborad cmd "CTRL minus" until you do</h5>
+        <h3>Upgrades</h3>
+        <div class="shop-item">
+            <button id="buyAutoClickerButton">Buy Auto-Clicker</button>
+            <p>Cost: <span id="autoClickerCostDisplay">100</span> clicks | Owned: <span id="autoClickerCountDisplay">0</span></p>
+            <p>Generates 1 Click/Sec</p>
+        </div>
+        
+        <div class="shop-item">
+            <button id="buyFactoryButton">Buy Keyboard Factory</button>
+            <p>Cost: <span id="factoryCostDisplay">5000</span> clicks | Owned: <span id="factoryCountDisplay">0</span></p>
+            <p>Generates 10 Clicks/Sec</p>
+        </div>
+
+        <div class="shop-item">
+            <button id="buyCpcUpgradeButton">Buy CPC Upgrade</button>
+            <p>Cost: <span id="cpcUpgradeCostDisplay">50</span> clicks</p>
+            <p>Increases manual clicks by 1</p>
+        </div>
+
+                <div class="shop-item">
+            <button id="buyCpcUpgradeButton2">Buy CPC Upgrade</button>
+            <p>Cost: <span id="cpcUpgradeCostDisplay">100</span> clicks</p>
+            <p>Increases manual clicks by 1</p>
+        </div>
+    </div>
+
+    <div>
+        <button id="achievements-button">Achievements</button>
+        <button id="reset-button">Reset Progress</button>
+    </div>
+
+    <!-- Achievements Modal -->
+    <div id="achievementsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Achievements</h2>
+            <ul id="achievement-list" class="achievement-list">
+                <!-- Achievements will be listed here by JavaScript -->
+            </ul>
+        </div>
+    </div>
+    <!-- End Achievements Modal -->
+     <h3>V1 (out dated)</h3>
+    <script>
+        const counterDisplay = document.getElementById("counter-display");
+        const keyboardContainer = document.getElementById("keyboard-container");
+        const resetButton = document.getElementById("reset-button");
+        const buyAutoClickerButton = document.getElementById("buyAutoClickerButton");
+        const buyFactoryButton = document.getElementById("buyFactoryButton"); // New button reference
+        const buyCpcUpgradeButton = document.getElementById("buyCpcUpgradeButton");
+        const buyCpcUpgradeButton2 = document.getElementById("buyCpcUpgradeButton");
+        const autoClickerCostDisplay = document.getElementById("autoClickerCostDisplay");
+        const factoryCostDisplay = document.getElementById("factoryCostDisplay"); // New display reference
+        const autoClickerCountDisplay = document.getElementById("autoClickerCountDisplay");
+        const factoryCountDisplay = document.getElementById("factoryCountDisplay"); // New display reference
+        const cpcUpgradeCostDisplay = document.getElementById("cpcUpgradeCostDisplay");
+        const cpcDisplay = document.getElementById("cpc-display");
+        const cpsDisplay = document.getElementById("cps-display");
+        const achievementsButton = document.getElementById("achievements-button");
+        const achievementsModal = document.getElementById("achievementsModal");
+        const closeButton = document.querySelector(".close-button");
+        const achievementListElement = document.getElementById("achievement-list");
+
+
+        let count = 0;
+        let isSpacePressed = false; 
+        let autoClickersOwned = 0;
+        let factoriesOwned = 0; // New item count
+        let autoClickerBaseCost = 100;
+        let factoryBaseCost = 5000; // New item base cost
+        const factoryCps = 10; // Clicks per second per factory
+        let clicksPerClick = 1;
+        let cpcUpgradeCost = 50;
+
+        const STORAGE_KEY_COUNT = 'spacebarClickCount';
+        const STORAGE_KEY_AUTO_COUNT = 'spacebarAutoClickersCount';
+        const STORAGE_KEY_FACTORY_COUNT = 'spacebarFactoryCount'; // New storage key
+        const STORAGE_KEY_CPC_VALUE = 'spacebarCPCValue'; 
+        const STORAGE_KEY_ACHIEVEMENTS = 'spacebarAchievements';
+
+        // --- Achievements Data Structure ---
+        const achievements = [
+            { id: 'start_clicking', name: 'Space Cadet', desc: 'Perform your first click.', unlocked: false, check: () => count >= 1 },
+            { id: 'hundred_clicks', name: 'Keyboard Warrior', desc: 'Reach 100 total clicks.', unlocked: false, check: () => count >= 100 },
+            { id: 'buy_autoclicker', name: 'Automation Enthusiast', desc: 'Purchase your first auto-clicker.', unlocked: false, check: () => autoClickersOwned >= 1 },
+            { id: 'high_roller', name: 'High Roller', desc: 'Reach 10,000 total clicks.', unlocked: false, check: () => count >= 10000 },
+            { id: 'factory_owner', name: 'Tycoon', desc: 'Purchase a Keyboard Factory.', unlocked: false, check: () => factoriesOwned >= 1 },
+        ];
+
+        // Function to update all UI elements
+        function updateDisplay() {
+            count = parseFloat(count.toFixed(1)); // Keep count clean for display
+            counterDisplay.textContent = Math.floor(count);
+            autoClickerCountDisplay.textContent = autoClickersOwned;
+            factoryCountDisplay.textContent = factoriesOwned;
+            autoClickerCostDisplay.textContent = Math.floor(autoClickerBaseCost);
+            factoryCostDisplay.textContent = Math.floor(factoryBaseCost);
+            cpcUpgradeCostDisplay.textContent = Math.floor(cpcUpgradeCost);
+            
+            cpcDisplay.textContent = clicksPerClick;
+            // Total CPS is sum of all sources
+            cpsDisplay.textContent = (autoClickersOwned * 1) + (factoriesOwned * factoryCps); 
+
+            buyAutoClickerButton.disabled = count < autoClickerBaseCost;
+            buyFactoryButton.disabled = count < factoryBaseCost;
+            buyCpcUpgradeButton.disabled = count < cpcUpgradeCost;
+            buyCpcUpgradeButton2.disabled = count < cpcUpgradeCost;
+        }
+        
+        // --- Achievements Functions ---
+        function checkAchievements() {
+            achievements.forEach(achievement => {
+                if (!achievement.unlocked && achievement.check()) {
+                    unlockAchievement(achievement);
+                }
+            });
+        }
+
+        function unlockAchievement(achievement) {
+            achievement.unlocked = true;
+            alert(`Achievement Unlocked: "${achievement.name}" - ${achievement.desc}`);
+            saveProgress(); // Save when an achievement is unlocked
+            renderAchievements();
+        }
+
+        function renderAchievements() {
+            achievementListElement.innerHTML = ''; // Clear the list
+            achievements.forEach(achievement => {
+                const li = document.createElement('li');
+                li.textContent = `${achievement.name}: ${achievement.desc}`;
+                li.classList.add(achievement.unlocked ? 'unlocked' : 'locked');
+                achievementListElement.appendChild(li);
+            });
+        }
+
+        // --- Game Logic Functions ---
+
+        function loadProgress() {
+            const savedCount = localStorage.getItem(STORAGE_KEY_COUNT);
+            const savedAutoCount = localStorage.getItem(STORAGE_KEY_AUTO_COUNT);
+            const savedFactoryCount = localStorage.getItem(STORAGE_KEY_FACTORY_COUNT);
+            const savedCpcValue = localStorage.getItem(STORAGE_KEY_CPC_VALUE);
+            const savedAchievements = JSON.parse(localStorage.getItem(STORAGE_KEY_ACHIEVEMENTS));
+            
+            if (savedCount !== null) count = parseFloat(savedCount);
+            if (savedAutoCount !== null) {
+                autoClickersOwned = parseInt(savedAutoCount, 10);
+                autoClickerBaseCost = Math.floor(100 * Math.pow(1.15, autoClickersOwned));
+            }
+            if (savedFactoryCount !== null) {
+                factoriesOwned = parseInt(savedFactoryCount, 10);
+                factoryBaseCost = Math.floor(5000 * Math.pow(1.2, factoriesOwned)); // Cost multiplier 1.2
+            }
+            if (savedCpcValue !== null) {
+                clicksPerClick = parseInt(savedCpcValue, 10);
+                cpcUpgradeCost = Math.floor(50 * Math.pow(2, clicksPerClick - 1));
+            }
+            if (savedAchievements !== null) {
+                // Merge loaded unlocked status with existing achievement objects
+                savedAchievements.forEach(savedAch => {
+                    const localAch = achievements.find(a => a.id === savedAch.id);
+                    if (localAch) localAch.unlocked = savedAch.unlocked;
+                });
+            }
+            updateDisplay();
+            renderAchievements();
+        }
+
+        function saveProgress() {
+            localStorage.setItem(STORAGE_KEY_COUNT, count.toString());
+            localStorage.setItem(STORAGE_KEY_AUTO_COUNT, autoClickersOwned.toString());
+            localStorage.setItem(STORAGE_KEY_FACTORY_COUNT, factoriesOwned.toString());
+            localStorage.setItem(STORAGE_KEY_CPC_VALUE, clicksPerClick.toString());
+            // Save only the necessary achievement data (id and unlocked status)
+            const achievementsToSave = achievements.map(a => ({ id: a.id, unlocked: a.unlocked }));
+            localStorage.setItem(STORAGE_KEY_ACHIEVEMENTS, JSON.stringify(achievementsToSave));
+        }
+
+        function incrementCounter() {
+            count += clicksPerClick;
+            updateDisplay();
+            checkAchievements(); // Check achievements after every click
+            saveProgress();
+        }
+
+        function buyAutoClicker() {
+            if (count >= autoClickerBaseCost) {
+                count -= autoClickerBaseCost;
+                autoClickersOwned += 1;
+                autoClickerBaseCost = Math.floor(autoClickerBaseCost * 1.15);
+                updateDisplay();
+                checkAchievements(); // Check achievements after purchase
+                saveProgress();
+            }
+        }
+
+        function buyFactory() { // New buy function for Factory
+            if (count >= factoryBaseCost) {
+                count -= factoryBaseCost;
+                factoriesOwned += 1;
+                factoryBaseCost = Math.floor(factoryBaseCost * 1.2); // Cost increases by 20%
+                updateDisplay();
+                checkAchievements(); // Check achievements after purchase
+                saveProgress();
+            }
+        }
+
+        function buyCpcUpgrade() {
+            if (count >= cpcUpgradeCost) {
+                count -= cpcUpgradeCost;
+                clicksPerClick += 1;
+                cpcUpgradeCost = Math.floor(cpcUpgradeCost * 2);
+                updateDisplay();
+                checkAchievements(); // Check achievements after purchase
+                saveProgress();
+            }
+        }
+
+        function buyCpcUpgrade2() {
+            if (count >= cpcUpgradeCost) {
+                count -= cpcUpgradeCost;
+                clicksPerClick += 1;
+                cpcUpgradeCost = Math.floor(cpcUpgradeCost * 2);
+                updateDisplay();
+                checkAchievements(); // Check achievements after purchase
+                saveProgress();
+            }
+        }
+        
+        // --- Event Handlers & Intervals ---
+
+        function handleKeyPress(event) {
+            if (event.code === "Space") {
+                event.preventDefault(); 
+                if (!isSpacePressed) {
+                    isSpacePressed = true;
+                    incrementCounter();
+                    keyboardContainer.classList.add("pressed"); 
+                }
+            }
+        }
+
+        function handleKeyRelease(event) {
+             if (event.code === "Space") {
+                isSpacePressed = false; 
+                keyboardContainer.classList.remove("pressed");
+             }
+        }
+
+        // Modal Handlers
+        achievementsButton.addEventListener("click", () => {
+            renderAchievements(); // Update list before showing
+            achievementsModal.style.display = "flex";
+        });
+        closeButton.addEventListener("click", () => {
+            achievementsModal.style.display = "none";
+        });
+        window.addEventListener("click", (event) => {
+            if (event.target == achievementsModal) {
+                achievementsModal.style.display = "none";
+            }
+        });
+
+
+        resetButton.addEventListener("click", function() {
+            localStorage.clear();
+            count = 0;
+            autoClickersOwned = 0;
+            factoriesOwned = 0;
+            autoClickerBaseCost = 100;
+            factoryBaseCost = 5000;
+            clicksPerClick = 1;
+            cpcUpgradeCost = 50;
+            // Reset achievements array defaults
+            achievements.forEach(a => a.unlocked = false);
+            updateDisplay();
+            renderAchievements();
+            alert("Progress has been reset!");
+        });
+        
+        buyAutoClickerButton.addEventListener("click", buyAutoClicker);
+        buyFactoryButton.addEventListener("click", buyFactory); // Attach new button listener
+        buyCpcUpgradeButton.addEventListener("click", buyCpcUpgrade);
+        buyCpcUpgradeButton2.addEventListener("click", buyCpcUpgrade2);
+        keyboardContainer.addEventListener("click", incrementCounter);
+
+        // Passive Income Loop (runs every second)
+        setInterval(() => {
+            // Calculate total CPS
+            const totalCps = (autoClickersOwned * 1) + (factoriesOwned * factoryCps);
+            if (totalCps > 0) {
+                count += totalCps;
+                updateDisplay();
+                checkAchievements(); // Check achievements during passive generation
+                saveProgress(); 
+            }
+        }, 1000); 
+
+        // Initial setup on page load
+        document.addEventListener("keydown", handleKeyPress);
+        document.addEventListener("keyup", handleKeyRelease);
+        loadProgress();
+    </script>
+</body>
+</html>

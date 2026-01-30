@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space Bar Clicker</title>
+    <link rel="shortcut icon" href="imgs/Space bar.png" type="image/x-icon" />
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            justify-content: space-evenly;
+            align-items: center;
+            height: auto;
+            margin: 0;
+            color: white;
+            font-family: sans-serif;
+            user-select: none;
+            background-color: #282c34;
+        }
+
+        #counter-display {
+            font-size: 8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .stats-container {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: #61dafb;
+        }
+
+        #cpc-display,
+        #cps-display {
+            font-weight: bold;
+        }
+
+        #keyboard-container {
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+
+            transition: all 0.1s ease;
+            margin-bottom: 20px;
+        }
+
+        #keyboard-container.pressed {
+            transform: translateY(3px);
+        }
+
+        #reset-button,
+        #achievements-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #achievements-button {
+            background-color: #4a4a8f;
+            margin-right: 10px;
+        }
+
+        #Uselessbutton {
+            background-color: #4a4a8f;
+            margin-top: 20px;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        /* Shop Styles */
+        .shop-container {
+            background-color: #3a3f4a;
+            padding: 15px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            border: 1px solid #555;
+        }
+
+        .shop-item {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 10px;
+        }
+
+        .shop-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .shop-item button {
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .shop-item button:disabled {
+            background-color: #777;
+            cursor: not-allowed;
+        }
+
+        /* Achievements Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            -webkit-animation:
+                fadein 0.5s,
+                2.5s;
+            animation:
+                fadein 0.5s,
+                2.5s;
+        }
+
+        .modal-content {
+            background-color: #3a3f4a;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 460px;
+            font-size: 13px;
+            border-radius: 10px;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: none;
+        }
+
+        .achievement-list li {
+            padding: 10px;
+            border-bottom: 1px solid #555;
+            list-style-type: none;
+        }
+
+        .achievement-list li.unlocked {
+            color: #4caf50;
+            /* Green for unlocked */
+        }
+
+        .achievement-list li.locked {
+            color: #777;
+            /* Gray for locked */
+            font-style: italic;
+        }
+
+        .leftbody {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .rightbody {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .collapsible {
+            background-color: #47726c;
+            color: white;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .active,
+        .collapsible:hover {
+            background-color: #47726c;
+        }
+
+        .content {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+        }
+
+        /* width */
+        ::-webkit-scrollbar {
+            width: 30px;
+        }
+
+        /* Track */
+        ::-webkit-scrollbar-track {
+            box-shadow: inset 0 0 5px grey;
+            border-radius: 10px;
+        }
+
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            background: red;
+            border-radius: 10px;
+        }
+
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b30000;
+        }
+
+        /* The snackbar - position it at the bottom and in the middle of the screen */
+        #snackbar {
+            visibility: collapse;
+            /* Hidden by default. Visible on click */
+            min-width: 250px;
+            /* Set a default minimum width */
+            margin-left: -125px;
+            /* Divide value of min-width by 2 */
+            background-color: #333;
+            /* Black background color */
+            color: #fff;
+            /* White text color */
+            text-align: center;
+            /* Centered text */
+            border-radius: 2px;
+            /* Rounded borders */
+            padding: 16px;
+            /* Padding */
+            position: fixed;
+            /* Sit on top of the screen */
+            z-index: 1;
+            /* Add a z-index if needed */
+            left: 50%;
+            /* Center the snackbar */
+            bottom: 30px;
+            /* 30px from the bottom */
+        }
+
+        /* Show the snackbar when clicking on a button (class added with JavaScript) */
+        #snackbar.show {
+            visibility: visible;
+            /* Show the snackbar */
+            /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+      However, delay the fade out process for 2.5 seconds */
+            -webkit-animation:
+                fadein 0.5s,
+                fadeout 0.5s 2.5s;
+            animation:
+                fadein 0.5s,
+                fadeout 0.5s 2.5s;
+        }
+
+        /* Animations to fade the snackbar in and out */
+        @-webkit-keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @-webkit-keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
+
+        #snackbarrest {
+            visibility: hidden;
+            /* Hidden by default. Visible on click */
+            min-width: 250px;
+            /* Set a default minimum width */
+            margin-left: -125px;
+            /* Divide value of min-width by 2 */
+            background-color: #333;
+            /* Black background color */
+            color: #fff;
+            /* White text color */
+            text-align: center;
+            /* Centered text */
+            border-radius: 2px;
+            /* Rounded borders */
+            padding: 16px;
+            /* Padding */
+            position: fixed;
+            /* Sit on top of the screen */
+            z-index: 1;
+            /* Add a z-index if needed */
+            left: 50%;
+            /* Center the snackbar */
+            bottom: 30px;
+            /* 30px from the bottom */
+        }
+
+        /* Show the snackbar when clicking on a button (class added with JavaScript) */
+        #snackbarrest.show {
+            visibility: visible;
+            /* Show the snackbar */
+            /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+      However, delay the fade out process for 2.5 seconds */
+            -webkit-animation:
+                fadein 0.5s,
+                fadeout 0.5s 2.5s;
+            animation:
+                fadein 0.5s,
+                fadeout 0.5s 2.5s;
+        }
+
+        #snackbaruseless {
+            visibility: hidden;
+            /* Hidden by default. Visible on click */
+            min-width: 250px;
+            /* Set a default minimum width */
+            margin-left: -125px;
+            /* Divide value of min-width by 2 */
+            background-color: #333;
+            /* Black background color */
+            color: #fff;
+            /* White text color */
+            text-align: center;
+            /* Centered text */
+            border-radius: 2px;
+            /* Rounded borders */
+            padding: 16px;
+            /* Padding */
+            position: fixed;
+            /* Sit on top of the screen */
+            z-index: 1;
+            /* Add a z-index if needed */
+            left: 50%;
+            /* Center the snackbar */
+            bottom: 30px;
+            /* 30px from the bottom */
+        }
+
+        /* Show the snackbar when clicking on a button (class added with JavaScript) */
+        #snackbaruseless.show {
+            visibility: visible;
+            /* Show the snackbar */
+            /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+      However, delay the fade out process for 2.5 seconds */
+            -webkit-animation:
+                fadein 0.5s,
+                fadeout 0.5s 2.5s;
+            animation:
+                fadein 0.5s,
+                fadeout 0.5s 2.5s;
+        }
+
+        #bomb {
+            width: 100px;
+            height: auto;
+        }
+
+        /* The snackbar - position it at the bottom and in the middle of the screen */
+        #um {
+            visibility: collapse;
+            /* Hidden by default. Visible on click */
+            min-width: 250px;
+            /* Set a default minimum width */
+            margin-left: -125px;
+            /* Divide value of min-width by 2 */
+            background-color: #333;
+            /* Black background color */
+            color: #fff;
+            /* White text color */
+            text-align: center;
+            /* Centered text */
+            border-radius: 2px;
+            /* Rounded borders */
+            padding: 16px;
+            /* Padding */
+            position: fixed;
+            /* Sit on top of the screen */
+            z-index: 1;
+            /* Add a z-index if needed */
+            left: 50%;
+            /* Center the snackbar */
+            bottom: 30px;
+            /* 30px from the bottom */
+        }
+
+        /* Show the snackbar when clicking on a button (class added with JavaScript) */
+        #um.show {
+            visibility: visible;
+            /* Show the snackbar */
+            /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+      However, delay the fade out process for 2.5 seconds */
+            -webkit-animation:
+                fadein 0.5s,
+                fadeout 0.5s 2.5s;
+            animation:
+                fadein 0.5s,
+                fadeout 0.5s 2.5s;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        justify-content: space-evenly;
+        align-items: center;
+      ">
+        <div class="leftbody">
+            <div id="counter-display" id="navbar">Loading...</div>
+            <div class="stats-container">
+                <p>
+                    CPC: <span id="cpc-display">1</span> | CPS:
+                    <span id="cps-display">0</span>
+                </p>
+            </div>
+            <div id="keyboard-container">
+                <img src="Spacebar.png" alt="" height="150px" />
+            </div>
+            <h3>V2.14 beta (latest)</h3>
+        </div>
+        <div class="rightbody">
+            <div class="shop-container">
+                <h3>Upgrades</h3>
+                <div class="shop-item">
+                    <button id="buyAutoClickerButton">Buy Auto-Clicker</button>
+                    <p>
+                        Cost: <span id="autoClickerCostDisplay">100</span> clicks | Owned:
+                        <span id="autoClickerCountDisplay">0</span>
+                    </p>
+                    <p>Generates 1 Click/Sec</p>
+                </div>
+                <div class="shop-item">
+                    <button id="buyFactoryButton">Buy Keyboard Factory</button>
+                    <p>
+                        Cost: <span id="factoryCostDisplay">5000</span> clicks | Owned:
+                        <span id="factoryCountDisplay">0</span>
+                    </p>
+                    <p>Generates 10 Clicks/Sec</p>
+                </div>
+                <div class="shop-item">
+                    <button id="buyCpcUpgradeButton">Buy CPC Upgrade</button>
+                    <p>Cost: <span id="cpcUpgradeCostDisplay">50</span> clicks</p>
+                    <p>Increases manual clicks by 1</p>
+                </div>
+                <div class="shop-item">
+                    <button id="buyCpcUpgradeButton2">Buy CPC Upgrade</button>
+                    <p>Cost: <span id="cpcUpgradeCostDisplay2">100</span> clicks</p>
+                    <p>Increases manual clicks by 1</p>
+                </div>
+            </div>
+            <div>
+                <button id="achievements-button">Achievements</button>
+                <button id="reset-button">Reset Progress</button>
+                <button id="Uselessbutton" onclick="myFunction()">
+                    Useless button
+                </button>
+            </div>
+            <!-- Achievements Modal -->
+            <div id="achievementsModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <h2>Achievements</h2>
+                    <ul id="achievement-list" class="achievement-list">
+                        <!-- Achievements will be listed here by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+            <!-- End Achievements Modal -->
+        </div>
+    </div>
+    <button style="width: auto; height: 2px; font-size: 2px" id="secret button" class="secret button"
+        onclick="secretbutton()">
+        ??
+    </button>
+    <div
+        style="
+            margin-top: 10px;border: black solid 10px;width: 95%; border-radius: 30px; display: flex; flex-direction: column; align-items: inherit;">
+        <h1>Info</h1>
+        <h3>some info</h3>
+        <h1>updates</h1>
+        <h3>
+            I update the game every once and a while so you might never know when it
+            comes out if you want to see the update log click this link
+            <a href="updates.html">Update log link</a>
+        </h3>
+        <h1>Discord server</h1>
+        <iframe src="https://discord.com/widget?id=1464724811489083555&theme=dark" width="350" height="500"
+            allowtransparency="true" frameborder="0" sandbox="allow-popups
+          allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+        <h3>Coming soon</h3>
+
+        <div class="bgimg">
+            <hr />
+            <p id="demo" style="font-size: 30px"></p>
+        </div>
+    </div>
+    <div style="
+        margin-top: 10px;
+        border: black solid 10px;
+        width: 95%;
+        border-radius: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: inherit;
+      ">
+        <h1>Q&A</h1>
+        <button class="collapsible" style="border-radius: 30px">
+            What is Spacebar cliker
+        </button>
+        <div class="content">
+            <p>
+                A game where you spam your space bar to earn clicks use those clicks
+                to buy stuff like a auto clicker that can click for you so you can sit
+                back and relax and not damage your keyborad
+            </p>
+        </div>
+        <button class="collapsible" style="border-radius: 30px; margin-top: 10px">
+            Is there source code
+        </button>
+        <div class="content">
+            <p>Um... yes on github</p>
+        </div>
+        <button class="collapsible" style="border-radius: 30px; margin-top: 10px">
+            Can i leave it on over night
+        </button>
+        <div class="content">
+            <p>yes you can and it should not absolutely break</p>
+        </div>
+        <button class="collapsible" style="border-radius: 30px; margin-top: 10px">
+            Is there a limit on how high i can go
+        </button>
+        <div class="content">
+            <p>yes there is it is one of the two listed here</p>
+            <ul>
+                <li>NaN</li>
+                <li>infinity/inf</li>
+            </ul>
+        </div>
+        <button class="collapsible" style="border-radius: 30px; margin-top: 10px">
+            hello?
+        </button>
+        <div class="content">
+            <p>hi!</p>
+        </div>
+    </div>
+
+    <div id="snackbar"></div>
+    <div id="snackbaruseless">Yep you read that right</div>
+    <div id="snackbarrest">
+        Progress has been reset <img src="imgs/explod.png" alt="" id="bomb" />
+    </div>
+    <div id="um">
+        <img src="imgs/explod.png" alt="" id="bomb" />
+    </div>
+    <button onclick="yay">a button what does it do</button>
+
+    <script>
+        function myFunction() {
+            // Get the snackbar DIV
+            var x = document.getElementById("snackbaruseless");
+            // Add the "show" class to DIV
+            x.className = "show";
+            // After 3 seconds, remove the show class from DIV
+            setTimeout(function () {
+                x.className = x.className.replace("show", "");
+            }, 3000);
+        } function yay() {
+            // Get the snackbar DIV
+            var x = document.getElementById("um");
+            // Add the "show" class to DIV
+            x.className = "show";
+            // After 3 seconds, remove the show class from DIV
+            setTimeout(function () {
+                x.className = x.className.replace("show", "");
+            }, 3000);
+        }
+        // Set the date we're counting down to
+        var countDownDate = new Date("Jan 31, 2026 0:0:0").getTime();
+        // Update the count down every 1 second
+        var countdownfunction = setInterval(function () {
+            // Get todays date and time
+            var now = new Date().getTime();
+            // Find the distance between now an the count down date
+            var distance = countDownDate - now;
+            // Time calculations for days, hours, minutes and seconds
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor(
+                (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+            );
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            // Output the result in an element with id="demo"
+            document.getElementById("demo").innerHTML =
+                days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+            // If the count down is over, write some text
+            if (distance < 0) {
+                clearInterval(countdownfunction);
+                document.getElementById("demo").innerHTML = "EXPIRED";
+            }
+        }, 1000);
+        var coll = document.getElementsByClassName("collapsible");
+        var i;
+        for (i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function () {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        }
+        const counterDisplay = document.getElementById("counter-display");
+        const keyboardContainer = document.getElementById("keyboard-container");
+        const resetButton = document.getElementById("reset-button");
+        const buyAutoClickerButton = document.getElementById(
+            "buyAutoClickerButton"
+        );
+        const buyFactoryButton = document.getElementById("buyFactoryButton"); // New button reference
+        const buyCpcUpgradeButton = document.getElementById(
+            "buyCpcUpgradeButton"
+        );
+        const buyCpcUpgradeButton2 = document.getElementById(
+            "buyCpcUpgradeButton"
+        );
+        const autoClickerCostDisplay = document.getElementById(
+            "autoClickerCostDisplay"
+        );
+        const factoryCostDisplay = document.getElementById("factoryCostDisplay"); // New display reference
+        const autoClickerCountDisplay = document.getElementById(
+            "autoClickerCountDisplay"
+        );
+        const factoryCountDisplay = document.getElementById(
+            "factoryCountDisplay"
+        ); // New display reference
+        const cpcUpgradeCostDisplay = document.getElementById(
+            "cpcUpgradeCostDisplay"
+        );
+        const cpcDisplay = document.getElementById("cpc-display");
+        const cpsDisplay = document.getElementById("cps-display");
+        const achievementsButton = document.getElementById("achievements-button");
+        const achievementsModal = document.getElementById("achievementsModal");
+        const closeButton = document.querySelector(".close-button");
+        const achievementListElement =
+            document.getElementById("achievement-list");
+        let count = 0;
+        let isSpacePressed = false;
+        let autoClickersOwned = 0;
+        let factoriesOwned = 0; // New item count
+        let autoClickerBaseCost = 100;
+        let factoryBaseCost = 5000; // New item base cost
+        const factoryCps = 100; // Clicks per second per factory
+        let clicksPerClick = 1;
+        let cpcUpgradeCost = 100;
+        const STORAGE_KEY_COUNT = "spacebarClickCount";
+        const STORAGE_KEY_AUTO_COUNT = "spacebarAutoClickersCount";
+        const STORAGE_KEY_FACTORY_COUNT = "spacebarFactoryCount"; // New storage key
+        const STORAGE_KEY_CPC_VALUE = "spacebarCPCValue";
+        const STORAGE_KEY_ACHIEVEMENTS = "spacebarAchievements";
+        // --- Achievements Data Structure ---
+        const achievements = [
+            {
+                id: "start_clicking",
+                name: "Space Cadet ",
+                desc: "Perform your first click. (clicking milestone 1)",
+                unlocked: false,
+                check: () => count >= 1,
+            },
+            {
+                id: "hundred_clicks",
+                name: "Keyboard Warrior",
+                desc: "Reach 100 total clicks. (clicking milestone 2)",
+                unlocked: false,
+                check: () => count >= 100,
+            },
+            {
+                id: "fivehunredclicks",
+                name:"Damaged keyborad",
+                desc: "Reach 500 total clicks are you sure youwana keep going your keyborad is suffring (clicking milestone 3)",
+                unlocked: false,
+                check: () => count >= 500,
+            },
+            {
+                id: "onethousandclicks",
+                name:"Oh",
+                desc: "Ok keep going i warned you  reach 1000 clicks(clicking milestone 4)",
+                unlocked: false,
+                check: () => count >= 1000,
+            },
+            {
+                id: "high_roller",
+                name: "High Roller",
+                desc: "Reach 10,000 total clicks.(clicking milestone 5)",
+                unlocked: false,
+                check: () => count >= 10000,
+            }, 
+            {
+                id: "onemillonclicks",
+                name:"Wow thats a lot of clicks",
+                desc: "have you ever heard of the out doors 1billon clicks (clicking milestone 6)",
+                unlocked: false,
+                check: () => count >= 1000000,
+
+            },           
+            {
+                id: "buy_autoclicker",
+                name: "Automation Enthusiast",
+                desc: "Purchase your first auto-clicker.",
+                unlocked: false,
+                check: () => autoClickersOwned >= 1,
+            },
+            {
+                id: "buyautoclickertwo",
+                name: "Very Enthusiast at automation ",
+                desc: "Purchase a total of 100 autoclickers",
+                unlocked: false,
+                check: () => autoClickersOwned >= 100,
+            },
+,
+
+        ];
+        // Function to update all UI elements
+        function updateDisplay() {
+            count = parseFloat(count.toFixed(1)); // Keep count clean for display
+            counterDisplay.textContent = Math.floor(count);
+            autoClickerCountDisplay.textContent = autoClickersOwned;
+            factoryCountDisplay.textContent = factoriesOwned;
+            autoClickerCostDisplay.textContent = Math.floor(autoClickerBaseCost);
+            factoryCostDisplay.textContent = Math.floor(factoryBaseCost);
+            cpcUpgradeCostDisplay.textContent = Math.floor(cpcUpgradeCost);
+            cpcDisplay.textContent = clicksPerClick;
+            // Total CPS is sum of all sources
+            cpsDisplay.textContent =
+                autoClickersOwned * 1 + factoriesOwned * factoryCps;
+            buyAutoClickerButton.disabled = count < autoClickerBaseCost;
+            buyFactoryButton.disabled = count < factoryBaseCost;
+            buyCpcUpgradeButton.disabled = count < cpcUpgradeCost;
+            buyCpcUpgradeButton2.disabled = count < cpcUpgradeCost;
+        }
+        // --- Achievements Functions ---
+        function checkAchievements() {
+            achievements.forEach((achievement) => {
+                if (!achievement.unlocked && achievement.check()) {
+                    unlockAchievement(achievement);
+                }
+            });
+        }
+
+        function unlockAchievement(achievement) {
+            achievement.unlocked = true;
+            saveProgress(); // Save when an achievement is unlocked
+            renderAchievements();
+            // Get the snackbar DIV
+            var x = document.getElementById("snackbar");
+
+            // Add the "show" class to DIV
+            x.className = "show";
+            // After 3 seconds, remove the show class from DIV
+            setTimeout(function () {
+                x.className = x.className.replace("show", "");
+                reload()
+            }, 3000);
+            setTimeout(function () {
+                window.location.reload(1);
+            }, 3000);;
+            var x = ((document.getElementById("snackbar").innerHTML =
+                `Achievement unlocked  ` +
+                `${achievement.name}: ${achievement.desc}`), 3000);
+        }
+
+        function renderAchievements() {
+            achievementListElement.innerHTML = ""; // Clear the list
+            achievements.forEach((achievement) => {
+                const li = document.createElement("li");
+                li.textContent = `${achievement.name}: ${achievement.desc}`;
+                li.classList.add(achievement.unlocked ? "unlocked" : "locked");
+                achievementListElement.appendChild(li);
+            });
+        }
+        
+
+        function secretbutton() {
+        {
+            check:  () => count >= 1 
+            renderAchievements
+        }
+        }
+        function addtocount() {
+
+        }
+
+        // --- Game Logic Functions ---
+        function loadProgress() {
+            const savedCount = localStorage.getItem(STORAGE_KEY_COUNT);
+            const savedAutoCount = localStorage.getItem(STORAGE_KEY_AUTO_COUNT);
+            const savedFactoryCount = localStorage.getItem(
+                STORAGE_KEY_FACTORY_COUNT
+            );
+            const savedCpcValue = localStorage.getItem(STORAGE_KEY_CPC_VALUE);
+            const savedAchievements = JSON.parse(
+                localStorage.getItem(STORAGE_KEY_ACHIEVEMENTS)
+            );
+            if (savedCount !== null) count = parseFloat(savedCount);
+            if (savedAutoCount !== null) {
+                autoClickersOwned = parseInt(savedAutoCount, 10);
+                autoClickerBaseCost = Math.floor(
+                    100 * Math.pow(1.15, autoClickersOwned)
+                );
+            }
+            if (savedFactoryCount !== null) {
+                factoriesOwned = parseInt(savedFactoryCount, 10);
+                factoryBaseCost = Math.floor(5000 * Math.pow(1.2, factoriesOwned)); // Cost multiplier 1.2
+            }
+            if (savedCpcValue !== null) {
+                clicksPerClick = parseInt(savedCpcValue, 10);
+                cpcUpgradeCost = Math.floor(50 * Math.pow(2, clicksPerClick - 1));
+            }
+            if (savedAchievements !== null) {
+                // Merge loaded unlocked status with existing achievement objects
+                savedAchievements.forEach((savedAch) => {
+                    const localAch = achievements.find((a) => a.id === savedAch.id);
+                    if (localAch) localAch.unlocked = savedAch.unlocked;
+                });
+            }
+            updateDisplay();
+            renderAchievements();
+        }
+
+        function saveProgress() {
+            localStorage.setItem(STORAGE_KEY_COUNT, count.toString());
+            localStorage.setItem(
+                STORAGE_KEY_AUTO_COUNT,
+                autoClickersOwned.toString()
+            );
+            localStorage.setItem(
+                STORAGE_KEY_FACTORY_COUNT,
+                factoriesOwned.toString()
+            );
+            localStorage.setItem(STORAGE_KEY_CPC_VALUE, clicksPerClick.toString());
+            // Save only the necessary achievement data (id and unlocked status)
+            const achievementsToSave = achievements.map((a) => ({
+                id: a.id,
+                unlocked: a.unlocked,
+            }));
+            localStorage.setItem(
+                STORAGE_KEY_ACHIEVEMENTS,
+                JSON.stringify(achievementsToSave)
+            );
+        }
+
+        function incrementCounter() {
+            count += clicksPerClick;
+            updateDisplay();
+            checkAchievements(); // Check achievements after every click
+            saveProgress();
+        }
+
+        function buyAutoClicker() {
+            if (count >= autoClickerBaseCost) {
+                count -= autoClickerBaseCost;
+                autoClickersOwned += 1;
+                autoClickerBaseCost = Math.floor(autoClickerBaseCost * 1.15);
+                updateDisplay();
+                checkAchievements(); // Check achievements after purchase
+                saveProgress();
+            }
+        }
+
+        function buyFactory() {
+            // New buy function for Factory
+            if (count >= factoryBaseCost) {
+                count -= factoryBaseCost;
+                factoriesOwned += 1;
+                factoryBaseCost = Math.floor(factoryBaseCost * 1.2); // Cost increases by 20%
+                updateDisplay();
+                checkAchievements(); // Check achievements after purchase
+                saveProgress();
+            }
+        }
+
+        function buyCpcUpgrade() {
+            if (count >= cpcUpgradeCost) {
+                count -= cpcUpgradeCost;
+                clicksPerClick += 1;
+                cpcUpgradeCost = Math.floor(cpcUpgradeCost * 2);
+                updateDisplay();
+                checkAchievements(); // Check achievements after purchase
+                saveProgress();
+            }
+        }
+
+        function buyCpcUpgrade2() {
+            if (count >= cpcUpgradeCost) {
+                count -= cpcUpgradeCost;
+                clicksPerClick += 1;
+                cpcUpgradeCost = Math.floor(cpcUpgradeCost * 2);
+                updateDisplay();
+                checkAchievements(); // Check achievements after purchase
+                saveProgress();
+            }
+        }
+        // --- Event Handlers & Intervals ---
+        function handleKeyPress(event) {
+            if (event.code === "Space") {
+                event.preventDefault();
+                if (!isSpacePressed) {
+                    isSpacePressed = true;
+                    incrementCounter();
+                    keyboardContainer.classList.add("pressed");
+                }
+            }
+        }
+
+        function handleKeyRelease(event) {
+            if (event.code === "Space") {
+                isSpacePressed = false;
+                keyboardContainer.classList.remove("pressed");
+            }
+        }
+        // Modal Handlers
+        achievementsButton.addEventListener("click", () => {
+            renderAchievements(); // Update list before showing
+            achievementsModal.style.display = "flex";
+        });
+        closeButton.addEventListener("click", () => {
+            achievementsModal.style.display = "none";
+        });
+        window.addEventListener("click", (event) => {
+            if (event.target == achievementsModal) {
+                achievementsModal.style.display = "none";
+            }
+        });
+        resetButton.addEventListener("click", function () {
+            localStorage.clear();
+            count = 0;
+            autoClickersOwned = 0;
+            factoriesOwned = 0;
+            autoClickerBaseCost = 100;
+            factoryBaseCost = 5000;
+            clicksPerClick = 1;
+            cpcUpgradeCost = 100;
+            // Reset achievements array defaults
+            achievements.forEach((a) => (a.unlocked = false));
+            updateDisplay();
+            renderAchievements();
+            // Get the snackbar DIV
+            var x = document.getElementById("snackbarrest");
+            // Add the "show" class to DIV
+            x.className = "show";
+            // After 3 seconds, remove the show class from DIV
+            setTimeout(function () {
+                x.className = x.className.replace("show", "");
+            }, 3000);
+        });
+        buyAutoClickerButton.addEventListener("click", buyAutoClicker);
+        buyFactoryButton.addEventListener("click", buyFactory); // Attach new button listener
+        buyCpcUpgradeButton.addEventListener("click", buyCpcUpgrade);
+        buyCpcUpgradeButton2.addEventListener("click", buyCpcUpgrade2);
+        keyboardContainer.addEventListener("click", incrementCounter);
+        // Passive Income Loop (runs every second)
+        setInterval(() => {
+            // Calculate total CPS
+            const totalCps = autoClickersOwned * 1 + factoriesOwned * factoryCps;
+            if (totalCps > 0) {
+                count += totalCps;
+                updateDisplay();
+                checkAchievements(); // Check achievements during passive generation
+                saveProgress();
+            }
+        }, 1000);
+        // Initial setup on page load
+        document.addEventListener("keydown", handleKeyPress);
+        document.addEventListener("keyup", handleKeyRelease);
+        loadProgress();
+    </script>
+</body>
+
+</html>
